@@ -15,10 +15,24 @@ MainWindow::MainWindow(QWidget *parent) :
   , m_pcVWidget(NULL)
 {
     ui->setupUi(this);
+
+    // メディアプレイヤーオブジェクト生成
     m_pcPlayer = new QMediaPlayer(this);
+
+    // 出力用ウィジェット生成
     m_pcVWidget = new QVideoWidget(ui->widget);
+    QPalette vwPal = palette();                         // Windows環境では背景が透過になってしまうためパレットを黒に設定
+    vwPal.setColor(QPalette::Background, Qt::black);
+    m_pcVWidget->setAutoFillBackground(true);
+    m_pcVWidget->setPalette(vwPal);
+
+    // 出力ウィジェット指定
     m_pcPlayer->setVideoOutput(m_pcVWidget);
+
+    // メディアプレイヤーのシグナル接続
     connect(m_pcPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
+
+    // 動画パス設定
     QStringList clstDirs = QStandardPaths::standardLocations(QStandardPaths::MoviesLocation);
     if (clstDirs.isEmpty() == false)
     {
