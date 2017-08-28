@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QStringList clstDirs = QStandardPaths::standardLocations(QStandardPaths::MoviesLocation);
     if (clstDirs.isEmpty() == false)
     {
-        m_pcPlayer->setMedia(QUrl::fromLocalFile(clstDirs.at(0) + "/歌うたいのバラッド uta utai no ballad.mp4"));
+        m_pcPlayer->setMedia(QUrl::fromLocalFile(clstDirs.at(0) + "/TestVideo.mp4"));
     }
 }
 
