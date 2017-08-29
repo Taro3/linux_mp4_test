@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent) :
             }
         }
     }
-    qDebug() << strMoviePath;
+    qDebug() << "The movie file path = '" + strMoviePath + "'";
 
     if (strMoviePath.isEmpty() == false)
     {
