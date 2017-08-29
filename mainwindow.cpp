@@ -1,4 +1,5 @@
 #include <QStandardPaths>
+#include <QFile>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -9,19 +10,17 @@
  * @param[in]   parent  親ウィジェットポインタ
  */
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    QMainWindow(parent)
+  , ui(new Ui::MainWindow)
   , m_pcPlayer(NULL)
   , m_pcVWidget(NULL)
 {
     ui->setupUi(this);
 
-    // メディアプレイヤーオブジェクト生成
     m_pcPlayer = new QMediaPlayer(this);
 
-    // 出力用ウィジェット生成
     m_pcVWidget = new QVideoWidget(ui->widget);
-    QPalette vwPal = palette();                         // Windows環境では背景が透過になってしまうためパレットを黒に設定
+    QPalette vwPal = palette();                         // Windows環境では背景が透過になってしまうためパレットの背景色を黒に設定
     vwPal.setColor(QPalette::Background, Qt::black);
     m_pcVWidget->setAutoFillBackground(true);
     m_pcVWidget->setPalette(vwPal);
@@ -33,8 +32,23 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_pcPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
 
     // 動画パス設定
-    QStringList clstDirs = QStandardPaths::standardLocations(QStandardPaths::MoviesLocation);
+    QStringList clstDirs = QStandardPaths::standardLocations(QStandardPaths::MoviesLocation);   // システムの動画ファイルパスを取得
+    QString strMoviePath = clstDirs.at(0) + "/TestVideo.mp4";
+
     if (clstDirs.isEmpty() == false)
+    {
+        if (QFile::exists(strMoviePath) == false)
+        {
+            strMoviePath = "./TestVideo.mp4";
+            if (QFile::exists(strMoviePath) == false)
+            {
+                strMoviePath.clear();
+            }
+        }
+    }
+    qDebug() << strMoviePath;
+
+    if (strMoviePath.isEmpty() == false)
     {
         m_pcPlayer->setMedia(QUrl::fromLocalFile(clstDirs.at(0) + "/TestVideo.mp4"));
     }
