@@ -55,6 +55,11 @@ MainWindow::MainWindow(QWidget *parent) :
     {
         m_pcPlayer->setMedia(QUrl::fromLocalFile(clstDirs.at(0) + "/TestVideo.mp4"));
     }
+
+    /*
+     * 再生位置更新シグナル接続
+     */
+    connect(m_pcPlayer, SIGNAL(positionChanged(qint64)), SLOT(positionChanged(qint64)));
 }
 
 //**********************************************************************************************************************
@@ -101,6 +106,8 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 void MainWindow::on_pushButtonPlay_clicked()
 {
     m_pcPlayer->play();
+    ui->horizontalSlider->setMaximum(m_pcPlayer->duration());
+    qDebug() << "video duration = " + QString::number(m_pcPlayer->duration());
 }
 
 //**********************************************************************************************************************
@@ -172,4 +179,28 @@ void MainWindow::on_pushButtonPause_clicked()
 void MainWindow::on_pushButtonStop_clicked()
 {
     m_pcPlayer->stop();
+}
+
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::positionChanged
+ *              再生位置変更イベントハンドラ
+ * @param[in]   position    再生位置
+ */
+void MainWindow::positionChanged(qint64 position)
+{
+    ui->horizontalSlider->setSliderPosition(position);
+    qDebug() << "player position = " + QString::number(position);
+}
+
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::on_horizontalSlider_sliderMoved
+ *              スライダー位置変更イベントハンドラ
+ * @param[in]   position    スライダー位置
+ */
+void MainWindow::on_horizontalSlider_sliderMoved(int position)
+{
+    m_pcPlayer->setPosition(position);
+    qDebug() << "slider position = " + QString::number(position);
 }

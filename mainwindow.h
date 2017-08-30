@@ -5,10 +5,14 @@
 #include <QMediaPlayer>
 #include <QVideoWidget>
 
+
 namespace Ui {
 class MainWindow;
 }
 
+/**
+ * @brief The MainWindow class
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -24,10 +28,10 @@ protected:
 private slots:
     void on_pushButtonPlay_clicked();
     void stateChanged(QMediaPlayer::State state);
-
     void on_pushButtonPause_clicked();
-
     void on_pushButtonStop_clicked();
+    void positionChanged(qint64 position);
+    void on_horizontalSlider_sliderMoved(int position);
 
 private:
     Ui::MainWindow          *ui;
