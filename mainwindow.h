@@ -32,6 +32,7 @@ private slots:
     void on_pushButtonStop_clicked();
     void positionChanged(qint64 position);
     void on_horizontalSlider_sliderMoved(int position);
+    void on_verticalSliderVolume_sliderMoved(int position);
 
 private:
     Ui::MainWindow          *ui;

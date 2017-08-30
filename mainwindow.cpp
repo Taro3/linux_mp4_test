@@ -60,6 +60,9 @@ MainWindow::MainWindow(QWidget *parent) :
      * 再生位置更新シグナル接続
      */
     connect(m_pcPlayer, SIGNAL(positionChanged(qint64)), SLOT(positionChanged(qint64)));
+
+    // ボリューム位置設定
+    ui->verticalSliderVolume->setSliderPosition(m_pcPlayer->volume());
 }
 
 //**********************************************************************************************************************
@@ -203,4 +206,16 @@ void MainWindow::on_horizontalSlider_sliderMoved(int position)
 {
     m_pcPlayer->setPosition(position);
     qDebug() << "slider position = " + QString::number(position);
+}
+
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::on_verticalSliderVolume_sliderMoved
+ *              ボリュームスライダー位置変更イベントハンドラ
+ * @param[in]   position    ボリューム
+ */
+void MainWindow::on_verticalSliderVolume_sliderMoved(int position)
+{
+    m_pcPlayer->setVolume(position);
+    qDebug() << "volume = " + QString::number(position);
 }
