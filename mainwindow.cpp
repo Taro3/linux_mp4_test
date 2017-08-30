@@ -4,6 +4,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+//**********************************************************************************************************************
 /**
  * @brief       MainWindow::MainWindow
  *              コンストラクタ
@@ -54,6 +55,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 }
 
+//**********************************************************************************************************************
 /**
  * @brief MainWindow::~MainWindow
  *        デストラクタ
@@ -63,6 +65,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+//**********************************************************************************************************************
 /**
  * @brief       MainWindow::showEvent
  *              Widget表示イベントハンドラ
@@ -75,6 +78,7 @@ void MainWindow::showEvent(QShowEvent *event)
     resizeVideoWidget();
 }
 
+//**********************************************************************************************************************
 /**
  * @brief       MainWindow::resizeEvent
  *              リサイズイベントハンドラ
@@ -87,6 +91,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     resizeVideoWidget();
 }
 
+//**********************************************************************************************************************
 /**
  * @brief MainWindow::on_pushButtonPlay_clicked
  *        再生ボタンクリックイベントハンドラ
@@ -96,6 +101,7 @@ void MainWindow::on_pushButtonPlay_clicked()
     m_pcPlayer->play();
 }
 
+//**********************************************************************************************************************
 /**
  * @brief       MainWindow::stateChanged
  *              プレイヤー状態変更イベントハンドラ
@@ -136,6 +142,7 @@ void MainWindow::stateChanged(QMediaPlayer::State state)
     ui->pushButtonStop->setEnabled(fStopEnale);
 }
 
+//**********************************************************************************************************************
 /**
  * @brief MainWindow::resizeVideoWidget
  *        ビデオ表示用ウィジェットのサイズ設定処理
@@ -145,6 +152,7 @@ void MainWindow::resizeVideoWidget()
     m_pcVWidget->setGeometry(ui->widget->rect());
 }
 
+//**********************************************************************************************************************
 /**
  * @brief MainWindow::on_pushButtonPause_clicked
  *        一時停止ボタンクリックイベントハンドラ
@@ -154,6 +162,7 @@ void MainWindow::on_pushButtonPause_clicked()
     m_pcPlayer->pause();
 }
 
+//**********************************************************************************************************************
 /**
  * @brief MainWindow::on_pushButtonStop_clicked
  *        停止ボタンクリックイベントハンドラ
