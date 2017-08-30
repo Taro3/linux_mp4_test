@@ -30,9 +30,10 @@ private slots:
     void on_pushButtonStop_clicked();
 
 private:
-    Ui::MainWindow *ui;
-    QMediaPlayer    *m_pcPlayer;
-    QVideoWidget    *m_pcVWidget;
+    Ui::MainWindow          *ui;
+    QMediaPlayer            *m_pcPlayer;
+    QVideoWidget            *m_pcVWidget;
+    static const QString    VIDEO_FILE_NAME;
 
     void resizeVideoWidget();
 };
