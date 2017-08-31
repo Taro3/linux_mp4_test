@@ -28,7 +28,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
@@ -122,7 +122,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
          <widget class="QLabel" name="labelPosition">
           <property name="text">
@@ -146,7 +146,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
          <widget class="QSlider" name="horizontalSliderPosition">
           <property name="pageStep">
@@ -201,18 +201,6 @@
      </layout>
     </item>
    </layout>
-   <zorder>horizontalSliderPosition</zorder>
-   <zorder>labelPosition</zorder>
-   <zorder>labelPlaybackRate</zorder>
-   <zorder>horizontalSliderPlaybackRate</zorder>
-   <zorder></zorder>
-   <zorder></zorder>
-   <zorder>horizontalSpacer</zorder>
-   <zorder>horizontalSpacer_2</zorder>
-   <zorder>horizontalSpacer</zorder>
-   <zorder>horizontalSpacer_2</zorder>
-   <zorder></zorder>
-   <zorder>pushButtonResetPlaybackRate</zorder>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
