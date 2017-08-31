@@ -31,8 +31,8 @@ private slots:
     void on_pushButtonPause_clicked();
     void on_pushButtonStop_clicked();
     void positionChanged(qint64 position);
-    void on_horizontalSlider_sliderMoved(int position);
-    void on_verticalSliderVolume_sliderMoved(int position);
+    void on_verticalSliderVolume_actionTriggered(int action);
+    void on_horizontalSlider_actionTriggered(int action);
 
 private:
     Ui::MainWindow          *ui;

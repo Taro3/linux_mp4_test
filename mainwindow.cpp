@@ -57,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     /*
-     * 再生位置更新シグナル接続
+     * 再生位置スライダー初期化
      */
     connect(m_pcPlayer, SIGNAL(positionChanged(qint64)), SLOT(positionChanged(qint64)));
 
@@ -110,6 +110,7 @@ void MainWindow::on_pushButtonPlay_clicked()
 {
     m_pcPlayer->play();
     ui->horizontalSlider->setMaximum(m_pcPlayer->duration());
+    ui->horizontalSlider->setPageStep(m_pcPlayer->duration() / 100);
     qDebug() << "video duration = " + QString::number(m_pcPlayer->duration());
 }
 
@@ -192,30 +193,37 @@ void MainWindow::on_pushButtonStop_clicked()
  */
 void MainWindow::positionChanged(qint64 position)
 {
-    ui->horizontalSlider->setSliderPosition(position);
-    qDebug() << "player position = " + QString::number(position);
+    ui->horizontalSlider->setValue(position);
 }
 
 //**********************************************************************************************************************
 /**
- * @brief       MainWindow::on_horizontalSlider_sliderMoved
- *              スライダー位置変更イベントハンドラ
- * @param[in]   position    スライダー位置
+ * @brief       MainWindow::on_verticalSliderVolume_actionTriggered
+ *              ボリュームスライダー操作イベントハンドラ
+ * @param[in]   action  操作種別
  */
-void MainWindow::on_horizontalSlider_sliderMoved(int position)
+void MainWindow::on_verticalSliderVolume_actionTriggered(int action)
 {
-    m_pcPlayer->setPosition(position);
-    qDebug() << "slider position = " + QString::number(position);
+    if (action == QAbstractSlider::SliderToMinimum)         // 先頭へのジャンプ処理を末尾へのジャンプに変更する
+    {
+        ui->verticalSliderVolume->setSliderPosition(ui->verticalSliderVolume->maximum());
+    }
+    else if (action == QAbstractSlider::SliderToMaximum)    // 末尾へのジャンプを先頭へのジャンプに変更する
+    {
+        ui->verticalSliderVolume->setSliderPosition(ui->verticalSliderVolume->minimum());
+    }
+
+    m_pcPlayer->setVolume(ui->verticalSliderVolume->sliderPosition());
 }
 
 //**********************************************************************************************************************
 /**
- * @brief       MainWindow::on_verticalSliderVolume_sliderMoved
- *              ボリュームスライダー位置変更イベントハンドラ
- * @param[in]   position    ボリューム
+ * @brief       MainWindow::on_horizontalSlider_actionTriggered
+ *              再生位置スライダー操作イベントハンドラ
+ * @param[in]   action  操作種別
  */
-void MainWindow::on_verticalSliderVolume_sliderMoved(int position)
+void MainWindow::on_horizontalSlider_actionTriggered(int action)
 {
-    m_pcPlayer->setVolume(position);
-    qDebug() << "volume = " + QString::number(position);
+    Q_UNUSED(action);
+    m_pcPlayer->setPosition(ui->horizontalSlider->sliderPosition());
 }
