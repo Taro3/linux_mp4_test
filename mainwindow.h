@@ -32,9 +32,9 @@ private slots:
     void on_pushButtonStop_clicked();
     void positionChanged(qint64 position);
     void on_verticalSliderVolume_actionTriggered(int action);
-    void on_horizontalSlider_actionTriggered(int action);
     void on_horizontalSliderPlaybackRate_actionTriggered(int action);
     void on_pushButtonResetPlaybackRate_clicked();
+    void on_horizontalSliderPosition_actionTriggered(int action);
 
 private:
     Ui::MainWindow          *ui;

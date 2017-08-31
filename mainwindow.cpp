@@ -63,6 +63,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // ボリューム位置設定
     ui->verticalSliderVolume->setSliderPosition(m_pcPlayer->volume());
+
+    // 再生速度初期化
+    m_pcPlayer->setPlaybackRate(1.0f);
 }
 
 //**********************************************************************************************************************
@@ -109,6 +112,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 void MainWindow::on_pushButtonPlay_clicked()
 {
     m_pcPlayer->play();
+    qDebug() << "playback rate =" + QString::number(m_pcPlayer->playbackRate());
     ui->horizontalSliderPlaybackRate->setSliderPosition(m_pcPlayer->playbackRate() * 10);
     ui->horizontalSliderPosition->setMaximum(m_pcPlayer->duration());
     ui->horizontalSliderPosition->setPageStep(m_pcPlayer->duration() / 100);
@@ -219,18 +223,6 @@ void MainWindow::on_verticalSliderVolume_actionTriggered(int action)
 
 //**********************************************************************************************************************
 /**
- * @brief       MainWindow::on_horizontalSlider_actionTriggered
- *              再生位置スライダー操作イベントハンドラ
- * @param[in]   action  操作種別
- */
-void MainWindow::on_horizontalSlider_actionTriggered(int action)
-{
-    Q_UNUSED(action);
-    m_pcPlayer->setPosition(ui->horizontalSliderPosition->sliderPosition());
-}
-
-//**********************************************************************************************************************
-/**
  * @brief       MainWindow::on_horizontalSliderPlaybackRate_actionTriggered
  *              再生速度スライダー操作イベントハンドラ
  * @param[in]   action  操作種別
@@ -250,4 +242,16 @@ void MainWindow::on_pushButtonResetPlaybackRate_clicked()
 {
     m_pcPlayer->setPlaybackRate(1.0f);
     ui->horizontalSliderPlaybackRate->setSliderPosition(10);
+}
+
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::on_horizontalSliderPosition_actionTriggered
+ *              再生位置スライダー操作イベントハンドラ
+ * @param[in]   action  操作種別
+ */
+void MainWindow::on_horizontalSliderPosition_actionTriggered(int action)
+{
+    Q_UNUSED(action);
+    m_pcPlayer->setPosition(ui->horizontalSliderPosition->sliderPosition());
 }
