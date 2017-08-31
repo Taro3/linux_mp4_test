@@ -109,8 +109,9 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 void MainWindow::on_pushButtonPlay_clicked()
 {
     m_pcPlayer->play();
-    ui->horizontalSlider->setMaximum(m_pcPlayer->duration());
-    ui->horizontalSlider->setPageStep(m_pcPlayer->duration() / 100);
+    ui->horizontalSliderPlaybackRate->setSliderPosition(m_pcPlayer->playbackRate() * 10);
+    ui->horizontalSliderPosition->setMaximum(m_pcPlayer->duration());
+    ui->horizontalSliderPosition->setPageStep(m_pcPlayer->duration() / 100);
     qDebug() << "video duration = " + QString::number(m_pcPlayer->duration());
 }
 
@@ -193,7 +194,7 @@ void MainWindow::on_pushButtonStop_clicked()
  */
 void MainWindow::positionChanged(qint64 position)
 {
-    ui->horizontalSlider->setValue(position);
+    ui->horizontalSliderPosition->setValue(position);
 }
 
 //**********************************************************************************************************************
@@ -225,5 +226,28 @@ void MainWindow::on_verticalSliderVolume_actionTriggered(int action)
 void MainWindow::on_horizontalSlider_actionTriggered(int action)
 {
     Q_UNUSED(action);
-    m_pcPlayer->setPosition(ui->horizontalSlider->sliderPosition());
+    m_pcPlayer->setPosition(ui->horizontalSliderPosition->sliderPosition());
+}
+
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::on_horizontalSliderPlaybackRate_actionTriggered
+ *              再生速度スライダー操作イベントハンドラ
+ * @param[in]   action  操作種別
+ */
+void MainWindow::on_horizontalSliderPlaybackRate_actionTriggered(int action)
+{
+    Q_UNUSED(action);
+    m_pcPlayer->setPlaybackRate(ui->horizontalSliderPlaybackRate->sliderPosition() / 10.0f);
+}
+
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::on_pushButtonResetPlaybackRate_clicked
+ *              再生速度リセットボタンクリックイベントハンドラ
+ */
+void MainWindow::on_pushButtonResetPlaybackRate_clicked()
+{
+    m_pcPlayer->setPlaybackRate(1.0f);
+    ui->horizontalSliderPlaybackRate->setSliderPosition(10);
 }

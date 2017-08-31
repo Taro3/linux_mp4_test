@@ -33,6 +33,8 @@ private slots:
     void positionChanged(qint64 position);
     void on_verticalSliderVolume_actionTriggered(int action);
     void on_horizontalSlider_actionTriggered(int action);
+    void on_horizontalSliderPlaybackRate_actionTriggered(int action);
+    void on_pushButtonResetPlaybackRate_clicked();
 
 private:
     Ui::MainWindow          *ui;
