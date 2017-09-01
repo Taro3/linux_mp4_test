@@ -1,5 +1,7 @@
 #include <QStandardPaths>
 #include <QFile>
+#include <QKeyEvent>
+#include <QMouseEvent>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -30,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent) :
     vwPal.setColor(QPalette::Background, Qt::black);
     m_pcVWidget->setAutoFillBackground(true);
     m_pcVWidget->setPalette(vwPal);
+    m_pcVWidget->installEventFilter(this);
+    connect(m_pcVWidget, SIGNAL(fullScreenChanged(bool)), SLOT(videoFullScreenChanged(bool)));
 
     m_pcPlayer->setVideoOutput(m_pcVWidget);
     connect(m_pcPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
@@ -61,10 +65,14 @@ MainWindow::MainWindow(QWidget *parent) :
      */
     connect(m_pcPlayer, SIGNAL(positionChanged(qint64)), SLOT(positionChanged(qint64)));
 
-    // ボリューム位置設定
+    /*
+     * ボリューム位置設定
+     */
     ui->verticalSliderVolume->setSliderPosition(m_pcPlayer->volume());
 
-    // 再生速度初期化
+    /*
+     * 再生速度初期化
+     */
     m_pcPlayer->setPlaybackRate(1.0f);
 }
 
@@ -102,6 +110,41 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     Q_UNUSED(event);
 
     resizeVideoWidget();
+}
+
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::eventFilter
+ *              イベントフィルタ処理
+ * @param[in]   watched 対象オブジェクト
+ * @param[in]   event   イベント情報
+ * @return      処理結果
+ * @retval      true    処理済み
+ * @retval      false   未処理
+ */
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    bool isProcessed = false;
+
+    if (watched == m_pcVWidget && event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent *pKeyEvent = static_cast<QKeyEvent*>(event);
+        if (pKeyEvent->key() == Qt::Key_Escape)
+        {
+            m_pcVWidget->setFullScreen(false);
+            isProcessed = true;
+        }
+    }
+    else if (watched == m_pcVWidget && event->type() == QEvent::MouseButtonDblClick)
+    {
+        QMouseEvent *pMouseEvent = static_cast<QMouseEvent*>(event);
+        if (pMouseEvent->button() == Qt::LeftButton)
+        {
+            m_pcVWidget->setFullScreen(!m_pcVWidget->isFullScreen());
+            isProcessed = true;
+        }
+    }
+    return isProcessed;
 }
 
 //**********************************************************************************************************************
@@ -254,4 +297,30 @@ void MainWindow::on_horizontalSliderPosition_actionTriggered(int action)
 {
     Q_UNUSED(action);
     m_pcPlayer->setPosition(ui->horizontalSliderPosition->sliderPosition());
+}
+
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::on_pushButtonFullScreen_clicked
+ *              [Full Screen]ボタンクリックイベントハンドラ
+ */
+void MainWindow::on_pushButtonFullScreen_clicked()
+{
+    m_pcVWidget->setFullScreen(true);
+}
+
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::videoFullScreenChanged
+ *              動画用ウィジェットフルスクリーン状態変更イベントハンドラ
+ * @param[in]   fullScreen  フルスクリーン状態
+ * @arg             true    フルスクリーン
+ * @arg             false   非フルスクリーン
+ */
+void MainWindow::videoFullScreenChanged(bool fullScreen)
+{
+    if (fullScreen == false)
+    {
+        resizeVideoWidget();
+    }
 }

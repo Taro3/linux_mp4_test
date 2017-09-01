@@ -24,6 +24,7 @@ public:
 protected:
     virtual void showEvent(QShowEvent *event);
     virtual void resizeEvent(QResizeEvent *event);
+    virtual bool eventFilter(QObject *watched, QEvent *event);
 
 private slots:
     void on_pushButtonPlay_clicked();
@@ -35,12 +36,14 @@ private slots:
     void on_horizontalSliderPlaybackRate_actionTriggered(int action);
     void on_pushButtonResetPlaybackRate_clicked();
     void on_horizontalSliderPosition_actionTriggered(int action);
+    void on_pushButtonFullScreen_clicked();
+    void videoFullScreenChanged(bool fullScreen);
 
 private:
     Ui::MainWindow          *ui;
-    QMediaPlayer            *m_pcPlayer;
-    QVideoWidget            *m_pcVWidget;
-    static const QString    VIDEO_FILE_NAME;
+    QMediaPlayer            *m_pcPlayer;            //!< メディアプレイヤーオブジェクト
+    QVideoWidget            *m_pcVWidget;           //!< 動画表示用ウィジェット
+    static const QString    VIDEO_FILE_NAME;        //!< 再生動画ファイル名
 
     void resizeVideoWidget();
 };
