@@ -13,6 +13,7 @@
 
 
 const QString MainWindow::VIDEO_FILE_NAME = "TestVideo.mp4";  //!< 動画ファイル名
+//const QString MainWindow::VIDEO_FILE_NAME = "TestVideo.wmv";  //!< 動画ファイル名
 
 //**********************************************************************************************************************
 /**
@@ -62,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if (strMoviePath.isEmpty() == false)
     {
-        m_pcPlayer->setMedia(QUrl::fromLocalFile(clstDirs.at(0) + "/TestVideo.mp4"));
+        m_pcPlayer->setMedia(QUrl::fromLocalFile(strMoviePath));
     }
 
     /*
@@ -227,10 +228,12 @@ void MainWindow::stateChanged(QMediaPlayer::State state)
  */
 void MainWindow::resizeVideoWidget()
 {
-    ui->graphicsView->setSceneRect(ui->graphicsView->rect());
+    QRect r = ui->graphicsView->rect();
+#ifdef  WIN32
+    r.adjust(0, 0, -2, -2);
+#endif
+    ui->graphicsView->setSceneRect(r);
     m_pcGVItem->setSize(ui->graphicsView->sceneRect().size());
-    qDebug() << ui->graphicsView->rect();
-    qDebug() << ui->graphicsView->sceneRect();
 }
 
 //**********************************************************************************************************************
