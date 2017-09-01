@@ -2,6 +2,7 @@
 #include <QFile>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QMediaObject>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -319,8 +320,13 @@ void MainWindow::on_pushButtonFullScreen_clicked()
  */
 void MainWindow::videoFullScreenChanged(bool fullScreen)
 {
-    if (fullScreen == false)
-    {
-        resizeVideoWidget();
-    }
+//    if (fullScreen == false)
+//    {
+//        this->show();
+//        resizeVideoWidget();
+//    }
+//    else
+//    {
+//        this->hide();
+//    }
 }
