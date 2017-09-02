@@ -148,36 +148,24 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 #ifdef  WIN32
     bool isProcessed = false;
 
-    if (watched == ui->graphicsView && event->type() == QEvent::KeyPress)
+    if (watched == m_pcVWidget && event->type() == QEvent::KeyPress)
     {
         QKeyEvent *pKeyEvent = static_cast<QKeyEvent*>(event);
         if (pKeyEvent->key() == Qt::Key_Escape)
         {
-            ui->widgetRightSide->show();
-            ui->widgetBottomSide->show();
-            this->showNormal();
+            m_pcVWidget->setFullScreen(false);
             isProcessed = true;
         }
     }
-    else if (watched == ui->graphicsView && event->type() == QEvent::MouseButtonDblClick)
+    else if (watched == m_pcVWidget && event->type() == QEvent::MouseButtonDblClick)
     {
         QMouseEvent *pMouseEvent = static_cast<QMouseEvent*>(event);
         if (pMouseEvent->button() == Qt::LeftButton)
         {
-            if (this->isFullScreen() == true)
-            {
-                ui->widgetRightSide->show();
-                ui->widgetBottomSide->show();
-                this->showNormal();
-            }
-            else
-            {
-                on_pushButtonFullScreen_clicked();
-            }
+            m_pcVWidget->setFullScreen(!m_pcVWidget->isFullScreen());
             isProcessed = true;
         }
     }
-
     return isProcessed;
 #else
     bool isProcessed = false;
