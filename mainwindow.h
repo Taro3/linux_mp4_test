@@ -43,6 +43,7 @@ private slots:
 #if defined(WIN32)
     void videoFullScreenChanged(bool fullScreen);
 #endif
+    void playbackRateChanged(qreal rate);
 
 private:
     Ui::MainWindow          *ui;

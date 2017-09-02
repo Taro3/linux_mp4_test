@@ -58,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pcPlayer->setVideoOutput(m_pcGVItem);
 #endif
     connect(m_pcPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
+    connect(m_pcPlayer, SIGNAL(playbackRateChanged(qreal)), SLOT(playbackRateChanged(qreal)));
 
     QStringList clstDirs = QStandardPaths::standardLocations(QStandardPaths::MoviesLocation);   // システムの動画ファイルパスを取得
     QString strMoviePath = clstDirs.at(0) + "/" + VIDEO_FILE_NAME;
@@ -376,6 +377,20 @@ void MainWindow::on_pushButtonFullScreen_clicked()
     ui->statusBar->hide();
     this->showFullScreen();
 #endif
+}
+
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::playbackRateChanged
+ *              再生速度変更イベントハンドラ
+ * @param[in]   rate    再生速度
+ * @note        再生速度を早めてから等倍速などに戻した際に映像と音声がずれる問題対応のための実装
+ */
+void MainWindow::playbackRateChanged(qreal rate)
+{
+    Q_UNUSED(rate);
+
+    m_pcPlayer->setPosition(ui->horizontalSliderPosition->sliderPosition());
 }
 
 #if defined(WIN32)
