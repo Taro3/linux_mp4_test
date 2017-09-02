@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <QMediaPlayer>
 #include <QVideoWidget>
+#if !defined(WIN32)
+#include <QGraphicsVideoItem>
+#endif
 
 
 namespace Ui {
@@ -37,12 +40,18 @@ private slots:
     void on_pushButtonResetPlaybackRate_clicked();
     void on_horizontalSliderPosition_actionTriggered(int action);
     void on_pushButtonFullScreen_clicked();
+#if defined(WIN32)
     void videoFullScreenChanged(bool fullScreen);
+#endif
 
 private:
     Ui::MainWindow          *ui;
     QMediaPlayer            *m_pcPlayer;            //!< メディアプレイヤーオブジェクト
+#if defined(WIN32)
     QVideoWidget            *m_pcVWidget;           //!< 動画表示用ウィジェット
+#else
+    QGraphicsVideoItem      *m_pcGVItem;
+#endif
     static const QString    VIDEO_FILE_NAME;        //!< 再生動画ファイル名
 
     void resizeVideoWidget();
