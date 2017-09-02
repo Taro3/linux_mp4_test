@@ -25,7 +25,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
   , ui(new Ui::MainWindow)
   , m_pcPlayer(NULL)
+#ifdef WIN32
+  , m_pcVWidget(NULL)
+#else
   , m_pcGVItem(NULL)
+#endif
 {
     ui->setupUi(this);
 
@@ -33,7 +37,17 @@ MainWindow::MainWindow(QWidget *parent) :
      *  ビデオ出力関係初期設定
      */
     m_pcPlayer = new QMediaPlayer(this);
+#ifdef  WIN32
+    m_pcVWidget = new QVideoWidget(ui->widget);
+    QPalette vwPal = palette();                         // Windows環境では背景が透過になってしまうためパレットの背景色を黒に設定
+    vwPal.setColor(QPalette::Background, Qt::black);
+    m_pcVWidget->setAutoFillBackground(true);
+    m_pcVWidget->setPalette(vwPal);
+    m_pcVWidget->installEventFilter(this);
+    connect(m_pcVWidget, SIGNAL(fullScreenChanged(bool)), SLOT(videoFullScreenChanged(bool)));
 
+    m_pcPlayer->setVideoOutput(m_pcVWidget);
+#else
     m_pcGVItem = new QGraphicsVideoItem;
     QGraphicsScene *pScene = new QGraphicsScene(ui->graphicsView);
     pScene->setBackgroundBrush(Qt::black);
@@ -42,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->graphicsView->installEventFilter(this);
 
     m_pcPlayer->setVideoOutput(m_pcGVItem);
+#endif
     connect(m_pcPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
 
     QStringList clstDirs = QStandardPaths::standardLocations(QStandardPaths::MoviesLocation);   // システムの動画ファイルパスを取得
@@ -130,6 +145,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
  */
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
+#ifdef  WIN32
     bool isProcessed = false;
 
     if (watched == ui->graphicsView && event->type() == QEvent::KeyPress)
@@ -163,6 +179,41 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
     }
 
     return isProcessed;
+#else
+    bool isProcessed = false;
+
+    if (watched == ui->graphicsView && event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent *pKeyEvent = static_cast<QKeyEvent*>(event);
+        if (pKeyEvent->key() == Qt::Key_Escape)
+        {
+            ui->widgetRightSide->show();
+            ui->widgetBottomSide->show();
+            this->showNormal();
+            isProcessed = true;
+        }
+    }
+    else if (watched == ui->graphicsView && event->type() == QEvent::MouseButtonDblClick)
+    {
+        QMouseEvent *pMouseEvent = static_cast<QMouseEvent*>(event);
+        if (pMouseEvent->button() == Qt::LeftButton)
+        {
+            if (this->isFullScreen() == true)
+            {
+                ui->widgetRightSide->show();
+                ui->widgetBottomSide->show();
+                this->showNormal();
+            }
+            else
+            {
+                on_pushButtonFullScreen_clicked();
+            }
+            isProcessed = true;
+        }
+    }
+
+    return isProcessed;
+#endif
 }
 
 //**********************************************************************************************************************
@@ -228,12 +279,12 @@ void MainWindow::stateChanged(QMediaPlayer::State state)
  */
 void MainWindow::resizeVideoWidget()
 {
-    QRect r = ui->graphicsView->rect();
-#ifdef  WIN32
-    r.adjust(0, 0, -2, -2);
-#endif
-    ui->graphicsView->setSceneRect(r);
+#if defined(WIN32)
+    m_pcVWidget->setGeometry(ui->widget->rect());
+#else
+    ui->graphicsView->setSceneRect(ui->graphicsView->rect());
     m_pcGVItem->setSize(ui->graphicsView->sceneRect().size());
+#endif
 }
 
 //**********************************************************************************************************************
@@ -329,8 +380,30 @@ void MainWindow::on_horizontalSliderPosition_actionTriggered(int action)
  */
 void MainWindow::on_pushButtonFullScreen_clicked()
 {
+#ifdef  WIN32
+    m_pcVWidget->setFullScreen(true);
+#else
     ui->widgetRightSide->hide();
     ui->widgetBottomSide->hide();
     ui->statusBar->hide();
     this->showFullScreen();
+#endif
 }
+
+#if defined(WIN32)
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::videoFullScreenChanged
+ *              動画用ウィジェットフルスクリーン状態変更イベントハンドラ
+ * @param[in]   fullScreen  フルスクリーン状態
+ * @arg             true    フルスクリーン
+ * @arg             false   非フルスクリーン
+ */
+void MainWindow::videoFullScreenChanged(bool fullScreen)
+{
+    if (fullScreen == false)
+    {
+        resizeVideoWidget();
+    }
+}
+#endif
