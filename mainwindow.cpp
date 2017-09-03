@@ -82,20 +82,17 @@ MainWindow::MainWindow(QWidget *parent) :
         m_pcPlayer->setMedia(QUrl::fromLocalFile(strMoviePath));
     }
 
-    /*
-     * 再生位置スライダー初期化
-     */
+    // 再生位置スライダー初期化
     connect(m_pcPlayer, SIGNAL(positionChanged(qint64)), SLOT(positionChanged(qint64)));
 
-    /*
-     * ボリューム位置設定
-     */
+    // ボリューム位置設定
     ui->verticalSliderVolume->setSliderPosition(m_pcPlayer->volume());
 
-    /*
-     * 再生速度初期化
-     */
+    // 再生速度初期化
     m_pcPlayer->setPlaybackRate(1.0f);
+
+    // 明るさ初期化
+    ui->horizontalSliderBrightness->setSliderPosition(m_pcVWidget->brightness());
 }
 
 //**********************************************************************************************************************
@@ -214,6 +211,10 @@ void MainWindow::on_pushButtonPlay_clicked()
 {
     m_pcPlayer->play();
     qDebug() << "playback rate =" + QString::number(m_pcPlayer->playbackRate());
+#if defined(WIN32)
+    m_pcVWidget->setBrightness(ui->horizontalSliderBrightness->sliderPosition());
+#else
+#endif
     ui->horizontalSliderPlaybackRate->setSliderPosition(m_pcPlayer->playbackRate() * 10);
     ui->horizontalSliderPosition->setMaximum(m_pcPlayer->duration());
     ui->horizontalSliderPosition->setPageStep(m_pcPlayer->duration() / 100);
@@ -410,3 +411,29 @@ void MainWindow::videoFullScreenChanged(bool fullScreen)
     }
 }
 #endif
+
+//**********************************************************************************************************************
+/**
+ * @brief       MainWindow::on_horizontalSliderBrightness_actionTriggered
+ *              明るさスライダー操作イベントハンドラ
+ * @param[in]   action  操作種別
+ */
+void MainWindow::on_horizontalSliderBrightness_actionTriggered(int action)
+{
+    Q_UNUSED(action);
+#if defined(WIN32)
+    m_pcVWidget->setBrightness(ui->horizontalSliderBrightness->sliderPosition());
+    m_pcVWidget->repaint();
+#else
+#endif
+}
+
+//**********************************************************************************************************************
+/**
+ * @brief   MainWindow::on_pushButtonResetBrightness_clicked
+ *          明るさリセットボタンクリックハンドラ
+ */
+void MainWindow::on_pushButtonResetBrightness_clicked()
+{
+    ui->horizontalSliderBrightness->setSliderPosition(0);
+}

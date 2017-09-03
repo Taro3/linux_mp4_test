@@ -45,6 +45,10 @@ private slots:
 #endif
     void playbackRateChanged(qreal rate);
 
+    void on_horizontalSliderBrightness_actionTriggered(int action);
+
+    void on_pushButtonResetBrightness_clicked();
+
 private:
     Ui::MainWindow          *ui;
     QMediaPlayer            *m_pcPlayer;            //!< メディアプレイヤーオブジェクト
