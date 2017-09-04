@@ -92,7 +92,12 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pcPlayer->setPlaybackRate(1.0f);
 
     // 明るさ初期化
+#if defined(WIN32)
     ui->horizontalSliderBrightness->setSliderPosition(m_pcVWidget->brightness());
+#else
+    /// @todo Linux実装
+#endif
+
 }
 
 //**********************************************************************************************************************
