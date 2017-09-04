@@ -7,8 +7,9 @@
 #include <QGraphicsScene>
 #include <QSizeF>
 #include <QDesktopWidget>
-//#include <QVBoxLayout>
+#if !defined(WIN32)
 #include <QThread>
+#endif
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -35,17 +36,16 @@ MainWindow::MainWindow(QWidget *parent) :
     /*
      *  ビデオ出力関係初期設定
      */
-    m_pcPlayer = new QMediaPlayer(this);
-    m_pcVWidget = new QVideoWidget(ui->widget);
-//    QVBoxLayout *pLayout = new QVBoxLayout(ui->widget);
-//    pLayout->setContentsMargins(0, 0, 0, 0);
-//    pLayout->addWidget(m_pcVWidget);
+    m_pcPlayer = new QMediaPlayer{this};
+    m_pcVWidget = new QVideoWidget{ui->widget};
     QPalette vwPal = palette();                         // Windows環境では背景が透過になってしまうためパレットの背景色を黒に設定
     vwPal.setColor(QPalette::Background, Qt::black);
     m_pcVWidget->setAutoFillBackground(true);
     m_pcVWidget->setPalette(vwPal);
     m_pcVWidget->installEventFilter(this);
+#if defined(WIN32)
     connect(m_pcVWidget, SIGNAL(fullScreenChanged(bool)), SLOT(videoFullScreenChanged(bool)));
+#endif
 
     m_pcPlayer->setVideoOutput(m_pcVWidget);
     connect(m_pcPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
@@ -178,12 +178,10 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 void MainWindow::on_pushButtonPlay_clicked()
 {
     m_pcPlayer->play();
-    qDebug() << "playback rate =" + QString::number(m_pcPlayer->playbackRate());
     m_pcVWidget->setBrightness(ui->horizontalSliderBrightness->sliderPosition());
     ui->horizontalSliderPlaybackRate->setSliderPosition(m_pcPlayer->playbackRate() * 10);
     ui->horizontalSliderPosition->setMaximum(m_pcPlayer->duration());
     ui->horizontalSliderPosition->setPageStep(m_pcPlayer->duration() / 100);
-    qDebug() << "video duration = " + QString::number(m_pcPlayer->duration());
 }
 
 //**********************************************************************************************************************
@@ -258,7 +256,6 @@ void MainWindow::createPlayer()
 
     m_pcPlayer = new QMediaPlayer(this);
     m_pcVWidget = new QVideoWidget(ui->widget);
-//    ui->widget->layout()->addWidget(m_pcVWidget);
     QPalette vwPal = this->palette();                   // Windows環境では背景が透過になってしまうためパレットの背景色を黒に設定
     vwPal.setColor(QPalette::Background, Qt::black);
     m_pcVWidget->setAutoFillBackground(true);
@@ -446,6 +443,7 @@ void MainWindow::playbackRateChanged(qreal rate)
     m_pcPlayer->setPosition(ui->horizontalSliderPosition->sliderPosition());
 }
 
+#if defined(WIN32)
 //**********************************************************************************************************************
 /**
  * @brief       MainWindow::videoFullScreenChanged
@@ -461,6 +459,7 @@ void MainWindow::videoFullScreenChanged(bool fullScreen)
         resizeVideoWidget();
     }
 }
+#endif
 
 //**********************************************************************************************************************
 /**

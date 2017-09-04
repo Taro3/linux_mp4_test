@@ -36,7 +36,9 @@ private slots:
     void on_pushButtonResetPlaybackRate_clicked();
     void on_horizontalSliderPosition_actionTriggered(int action);
     void on_pushButtonFullScreen_clicked();
+#if defined(WIN32)
     void videoFullScreenChanged(bool fullScreen);
+#endif
     void playbackRateChanged(qreal rate);
     void on_horizontalSliderBrightness_actionTriggered(int action);
     void on_pushButtonResetBrightness_clicked();
