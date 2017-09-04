@@ -45,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pcVWidget->setAutoFillBackground(true);
     m_pcVWidget->setPalette(vwPal);
     m_pcVWidget->installEventFilter(this);
-//    connect(m_pcVWidget, SIGNAL(fullScreenChanged(bool)), SLOT(videoFullScreenChanged(bool)));
+    connect(m_pcVWidget, SIGNAL(fullScreenChanged(bool)), SLOT(videoFullScreenChanged(bool)));
 
     m_pcPlayer->setVideoOutput(m_pcVWidget);
     connect(m_pcPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
@@ -139,7 +139,11 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         QKeyEvent *pKeyEvent = static_cast<QKeyEvent*>(event);
         if (pKeyEvent->key() == Qt::Key_Escape)
         {
+#if defined(WIN32)
+            m_pcVWidget->setFullScreen(false);
+#else
             createPlayer();
+#endif
             isProcessed = true;
         }
     }
@@ -148,6 +152,9 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         QMouseEvent *pMouseEvent = static_cast<QMouseEvent*>(event);
         if (pMouseEvent->button() == Qt::LeftButton)
         {
+#if defined(WIN32)
+            m_pcVWidget->setFullScreen(!m_pcVWidget->isFullScreen());
+#else
             if (m_pcVWidget->isFullScreen())
             {
                 createPlayer();
@@ -156,7 +163,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
             {
                 m_pcVWidget->setFullScreen(true);
             }
-//            m_pcVWidget->setFullScreen(!m_pcVWidget->isFullScreen());
+#endif
             isProcessed = true;
         }
     }
@@ -222,14 +229,16 @@ void MainWindow::stateChanged(QMediaPlayer::State state)
 
 //**********************************************************************************************************************
 /**
- * @brief MainWindow::resizeVideoWidget
- *        ビデオ表示用ウィジェットのサイズ設定処理
+ * @brief   MainWindow::resizeVideoWidget
+ *          ビデオ表示用ウィジェットのサイズ設定処理
  */
 void MainWindow::resizeVideoWidget()
 {
     m_pcVWidget->setGeometry(ui->widget->rect());
 }
 
+#if !defined(WIN32)
+/// @todo Windowsの場合は下記関数を呼び出さずに通常処理を行う
 void MainWindow::createPlayer()
 {
     QMediaPlayer::State eCurState = m_pcPlayer->state();
@@ -325,6 +334,7 @@ thread()->msleep(100);  /// @todo 他の回避方法を探る
         break;
     }
 }
+#endif
 
 //**********************************************************************************************************************
 /**
@@ -446,10 +456,10 @@ void MainWindow::playbackRateChanged(qreal rate)
  */
 void MainWindow::videoFullScreenChanged(bool fullScreen)
 {
-//    if (fullScreen == false)
-//    {
-//        resizeVideoWidget();
-//    }
+    if (fullScreen == false)
+    {
+        resizeVideoWidget();
+    }
 }
 
 //**********************************************************************************************************************

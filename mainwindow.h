@@ -4,10 +4,6 @@
 #include <QMainWindow>
 #include <QMediaPlayer>
 #include <QVideoWidget>
-#if !defined(WIN32)
-#include <QGraphicsVideoItem>
-#endif
-
 
 namespace Ui {
 class MainWindow;
@@ -53,7 +49,9 @@ private:
     QString                 m_strFilename;          //!< 動画ファイルパス
 
     void resizeVideoWidget();
+#if !defined(WIN32)
     void createPlayer();
+#endif
 };
 
 #endif // MAINWINDOW_H
