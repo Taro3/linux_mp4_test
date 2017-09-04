@@ -214,6 +214,7 @@ void MainWindow::on_pushButtonPlay_clicked()
 #if defined(WIN32)
     m_pcVWidget->setBrightness(ui->horizontalSliderBrightness->sliderPosition());
 #else
+    /// @todo Linux実装
 #endif
     ui->horizontalSliderPlaybackRate->setSliderPosition(m_pcPlayer->playbackRate() * 10);
     ui->horizontalSliderPosition->setMaximum(m_pcPlayer->duration());
@@ -425,6 +426,7 @@ void MainWindow::on_horizontalSliderBrightness_actionTriggered(int action)
     m_pcVWidget->setBrightness(ui->horizontalSliderBrightness->sliderPosition());
     m_pcVWidget->repaint();
 #else
+    /// @todo Linux実装
 #endif
 }
 
