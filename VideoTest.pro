@@ -30,10 +30,5 @@ SOURCES += \
 HEADERS += \
         mainwindow.h
 
-win32 {
-    FORMS += \
-            ui/win32/mainwindow.ui
-} else {
-    FORMS += \
-            ui/unix/mainwindow.ui
-}
+FORMS += \
+        mainwindow.ui

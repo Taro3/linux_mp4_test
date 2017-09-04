@@ -7,6 +7,8 @@
 #include <QGraphicsScene>
 #include <QSizeF>
 #include <QDesktopWidget>
+//#include <QVBoxLayout>
+#include <QThread>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -25,11 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
   , ui(new Ui::MainWindow)
   , m_pcPlayer(NULL)
-#ifdef WIN32
   , m_pcVWidget(NULL)
-#else
-  , m_pcGVItem(NULL)
-#endif
+  , m_strFilename("")
 {
     ui->setupUi(this);
 
@@ -37,49 +36,39 @@ MainWindow::MainWindow(QWidget *parent) :
      *  ビデオ出力関係初期設定
      */
     m_pcPlayer = new QMediaPlayer(this);
-#ifdef  WIN32
     m_pcVWidget = new QVideoWidget(ui->widget);
+//    QVBoxLayout *pLayout = new QVBoxLayout(ui->widget);
+//    pLayout->setContentsMargins(0, 0, 0, 0);
+//    pLayout->addWidget(m_pcVWidget);
     QPalette vwPal = palette();                         // Windows環境では背景が透過になってしまうためパレットの背景色を黒に設定
     vwPal.setColor(QPalette::Background, Qt::black);
     m_pcVWidget->setAutoFillBackground(true);
     m_pcVWidget->setPalette(vwPal);
     m_pcVWidget->installEventFilter(this);
-    connect(m_pcVWidget, SIGNAL(fullScreenChanged(bool)), SLOT(videoFullScreenChanged(bool)));
+//    connect(m_pcVWidget, SIGNAL(fullScreenChanged(bool)), SLOT(videoFullScreenChanged(bool)));
 
     m_pcPlayer->setVideoOutput(m_pcVWidget);
-#else
-    m_pcGVItem = new QGraphicsVideoItem;
-    QGraphicsScene *pScene = new QGraphicsScene(ui->graphicsView);
-    pScene->setBackgroundBrush(Qt::black);
-    ui->graphicsView->setScene(pScene);
-    ui->graphicsView->scene()->addItem(m_pcGVItem);
-    ui->graphicsView->installEventFilter(this);
-
-    m_pcPlayer->setVideoOutput(m_pcGVItem);
-#endif
     connect(m_pcPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
     connect(m_pcPlayer, SIGNAL(playbackRateChanged(qreal)), SLOT(playbackRateChanged(qreal)));
 
     QStringList clstDirs = QStandardPaths::standardLocations(QStandardPaths::MoviesLocation);   // システムの動画ファイルパスを取得
-    QString strMoviePath = clstDirs.at(0) + "/" + VIDEO_FILE_NAME;
+    m_strFilename = clstDirs.at(0) + "/" + VIDEO_FILE_NAME;
 
     if (clstDirs.isEmpty() == false)
     {
-        if (QFile::exists(strMoviePath) == false)
+        if (QFile::exists(m_strFilename) == false)
         {
-            strMoviePath = "./" + VIDEO_FILE_NAME;
-
-            if (QFile::exists(strMoviePath) == false)
+            if (QFile::exists(m_strFilename) == false)
             {
-                strMoviePath.clear();
+                m_strFilename.clear();
             }
         }
     }
-    qDebug() << "The movie file path = '" + strMoviePath + "'";
+    qDebug() << "The movie file path = '" + m_strFilename + "'";
 
-    if (strMoviePath.isEmpty() == false)
+    if (m_strFilename.isEmpty() == false)
     {
-        m_pcPlayer->setMedia(QUrl::fromLocalFile(strMoviePath));
+        m_pcPlayer->setMedia(QUrl::fromLocalFile(m_strFilename));
     }
 
     // 再生位置スライダー初期化
@@ -92,12 +81,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pcPlayer->setPlaybackRate(1.0f);
 
     // 明るさ初期化
-#if defined(WIN32)
     ui->horizontalSliderBrightness->setSliderPosition(m_pcVWidget->brightness());
-#else
-    /// @todo Linux実装
-#endif
-
 }
 
 //**********************************************************************************************************************
@@ -148,7 +132,6 @@ void MainWindow::resizeEvent(QResizeEvent *event)
  */
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
-#ifdef  WIN32
     bool isProcessed = false;
 
     if (watched == m_pcVWidget && event->type() == QEvent::KeyPress)
@@ -156,7 +139,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         QKeyEvent *pKeyEvent = static_cast<QKeyEvent*>(event);
         if (pKeyEvent->key() == Qt::Key_Escape)
         {
-            m_pcVWidget->setFullScreen(false);
+            createPlayer();
             isProcessed = true;
         }
     }
@@ -165,46 +148,19 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         QMouseEvent *pMouseEvent = static_cast<QMouseEvent*>(event);
         if (pMouseEvent->button() == Qt::LeftButton)
         {
-            m_pcVWidget->setFullScreen(!m_pcVWidget->isFullScreen());
-            isProcessed = true;
-        }
-    }
-    return isProcessed;
-#else
-    bool isProcessed = false;
-
-    if (watched == ui->graphicsView && event->type() == QEvent::KeyPress)
-    {
-        QKeyEvent *pKeyEvent = static_cast<QKeyEvent*>(event);
-        if (pKeyEvent->key() == Qt::Key_Escape)
-        {
-            ui->widgetRightSide->show();
-            ui->widgetBottomSide->show();
-            this->showNormal();
-            isProcessed = true;
-        }
-    }
-    else if (watched == ui->graphicsView && event->type() == QEvent::MouseButtonDblClick)
-    {
-        QMouseEvent *pMouseEvent = static_cast<QMouseEvent*>(event);
-        if (pMouseEvent->button() == Qt::LeftButton)
-        {
-            if (this->isFullScreen() == true)
+            if (m_pcVWidget->isFullScreen())
             {
-                ui->widgetRightSide->show();
-                ui->widgetBottomSide->show();
-                this->showNormal();
+                createPlayer();
             }
             else
             {
-                on_pushButtonFullScreen_clicked();
+                m_pcVWidget->setFullScreen(true);
             }
+//            m_pcVWidget->setFullScreen(!m_pcVWidget->isFullScreen());
             isProcessed = true;
         }
     }
-
     return isProcessed;
-#endif
 }
 
 //**********************************************************************************************************************
@@ -216,11 +172,7 @@ void MainWindow::on_pushButtonPlay_clicked()
 {
     m_pcPlayer->play();
     qDebug() << "playback rate =" + QString::number(m_pcPlayer->playbackRate());
-#if defined(WIN32)
     m_pcVWidget->setBrightness(ui->horizontalSliderBrightness->sliderPosition());
-#else
-    /// @todo Linux実装
-#endif
     ui->horizontalSliderPlaybackRate->setSliderPosition(m_pcPlayer->playbackRate() * 10);
     ui->horizontalSliderPosition->setMaximum(m_pcPlayer->duration());
     ui->horizontalSliderPosition->setPageStep(m_pcPlayer->duration() / 100);
@@ -275,12 +227,103 @@ void MainWindow::stateChanged(QMediaPlayer::State state)
  */
 void MainWindow::resizeVideoWidget()
 {
-#if defined(WIN32)
     m_pcVWidget->setGeometry(ui->widget->rect());
-#else
-    ui->graphicsView->setSceneRect(ui->graphicsView->rect());
-    m_pcGVItem->setSize(ui->graphicsView->sceneRect().size());
+}
+
+void MainWindow::createPlayer()
+{
+    QMediaPlayer::State eCurState = m_pcPlayer->state();
+
+    if (m_pcVWidget != nullptr)
+    {
+        m_pcVWidget->disconnect();
+        delete m_pcVWidget;
+        m_pcVWidget = nullptr;
+    }
+    if (m_pcPlayer != nullptr)
+    {
+        m_pcPlayer->disconnect();
+        delete m_pcPlayer;
+        m_pcPlayer = nullptr;
+    }
+
+    m_pcPlayer = new QMediaPlayer(this);
+    m_pcVWidget = new QVideoWidget(ui->widget);
+//    ui->widget->layout()->addWidget(m_pcVWidget);
+    QPalette vwPal = this->palette();                   // Windows環境では背景が透過になってしまうためパレットの背景色を黒に設定
+    vwPal.setColor(QPalette::Background, Qt::black);
+    m_pcVWidget->setAutoFillBackground(true);
+    m_pcVWidget->setPalette(vwPal);
+    m_pcVWidget->installEventFilter(this);
+//    connect(m_pcVWidget, SIGNAL(fullScreenChanged(bool)), SLOT(videoFullScreenChanged(bool)));
+
+    connect(m_pcPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChanged(QMediaPlayer::State)));
+    connect(m_pcPlayer, SIGNAL(playbackRateChanged(qreal)), SLOT(playbackRateChanged(qreal)));
+    m_pcPlayer->setVideoOutput(m_pcVWidget);
+
+    if (m_strFilename.isEmpty() == true)
+    {
+        QStringList clstDirs = QStandardPaths::standardLocations(QStandardPaths::MoviesLocation);   // システムの動画ファイルパスを取得
+        m_strFilename = clstDirs.at(0) + "/" + VIDEO_FILE_NAME;
+
+        if (clstDirs.isEmpty() == false)
+        {
+            if (QFile::exists(m_strFilename) == false)
+            {
+                if (QFile::exists(m_strFilename) == false)
+                {
+                    m_strFilename.clear();
+                }
+            }
+        }
+        qDebug() << "The movie file path = '" + m_strFilename + "'";
+    }
+
+    if (m_strFilename.isEmpty() == false)
+    {
+        m_pcPlayer->setMedia(QUrl::fromLocalFile(m_strFilename));
+    }
+
+    // 再生位置設定
+    m_pcPlayer->setPosition(ui->horizontalSliderPosition->sliderPosition());
+
+    // ボリューム位置設定
+    m_pcPlayer->setVolume(ui->verticalSliderVolume->sliderPosition());
+
+    // 再生速度初期化
+    m_pcPlayer->setPlaybackRate(ui->horizontalSliderPlaybackRate->sliderPosition() / 10.0f);
+
+    // 明るさ初期化
+    m_pcVWidget->setBrightness(ui->horizontalSliderBrightness->sliderPosition());
+
+    // 再生位置スライダー初期化
+    connect(m_pcPlayer, SIGNAL(positionChanged(qint64)), SLOT(positionChanged(qint64)));
+
+#if !defined(WIN32)
+thread()->msleep(100);  /// @todo 他の回避方法を探る
 #endif
+
+    resizeVideoWidget();
+    m_pcVWidget->show();
+
+    switch (eCurState)
+    {
+    case QMediaPlayer::StoppedState:
+        m_pcPlayer->stop();
+        break;
+
+    case QMediaPlayer::PlayingState:
+        m_pcPlayer->play();
+        break;
+
+    case QMediaPlayer::PausedState:
+        m_pcPlayer->pause();
+        break;
+
+    default:
+        m_pcPlayer->stop();
+        break;
+    }
 }
 
 //**********************************************************************************************************************
@@ -376,14 +419,7 @@ void MainWindow::on_horizontalSliderPosition_actionTriggered(int action)
  */
 void MainWindow::on_pushButtonFullScreen_clicked()
 {
-#ifdef  WIN32
     m_pcVWidget->setFullScreen(true);
-#else
-    ui->widgetRightSide->hide();
-    ui->widgetBottomSide->hide();
-    ui->statusBar->hide();
-    this->showFullScreen();
-#endif
 }
 
 //**********************************************************************************************************************
@@ -400,7 +436,6 @@ void MainWindow::playbackRateChanged(qreal rate)
     m_pcPlayer->setPosition(ui->horizontalSliderPosition->sliderPosition());
 }
 
-#if defined(WIN32)
 //**********************************************************************************************************************
 /**
  * @brief       MainWindow::videoFullScreenChanged
@@ -411,12 +446,11 @@ void MainWindow::playbackRateChanged(qreal rate)
  */
 void MainWindow::videoFullScreenChanged(bool fullScreen)
 {
-    if (fullScreen == false)
-    {
-        resizeVideoWidget();
-    }
+//    if (fullScreen == false)
+//    {
+//        resizeVideoWidget();
+//    }
 }
-#endif
 
 //**********************************************************************************************************************
 /**
@@ -427,12 +461,9 @@ void MainWindow::videoFullScreenChanged(bool fullScreen)
 void MainWindow::on_horizontalSliderBrightness_actionTriggered(int action)
 {
     Q_UNUSED(action);
-#if defined(WIN32)
+
     m_pcVWidget->setBrightness(ui->horizontalSliderBrightness->sliderPosition());
     m_pcVWidget->repaint();
-#else
-    /// @todo Linux実装
-#endif
 }
 
 //**********************************************************************************************************************
